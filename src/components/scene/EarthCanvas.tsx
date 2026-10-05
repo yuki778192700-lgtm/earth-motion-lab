@@ -3,11 +3,15 @@ import { ACESFilmicToneMapping } from 'three'
 import { EarthScene } from './EarthScene'
 import { SceneToolbar } from './SceneToolbar'
 import { useEarthLabStore } from '../../store/useEarthLabStore'
+import { ScenePerformanceProbe } from './ScenePerformanceProbe'
+import { getLabModuleRuntimeConfig } from '../../config/labModuleRegistry'
+import { SceneLegend } from './SceneLegend'
 
 export function EarthCanvas() {
   const activeModuleId = useEarthLabStore((state) => state.activeModuleId)
-  const isOrbitMode = activeModuleId === 'revolution'
-  const isDayNightMode = activeModuleId === 'day-night' || activeModuleId === 'terminator'
+  const sceneKind = getLabModuleRuntimeConfig(activeModuleId).scene
+  const isOrbitMode = sceneKind === 'orbit'
+  const isDayNightMode = sceneKind === 'day-night'
   const educationOverlayMessage = useEarthLabStore((state) => state.educationOverlayMessage)
 
   return (
@@ -22,8 +26,8 @@ export function EarthCanvas() {
         }}
       >
         <color attach="background" args={['#030914']} />
-        <fog attach="fog" args={isOrbitMode ? ['#030914', 18, 38] : ['#030914', 8, 16]} />
         <EarthScene />
+        {import.meta.env.DEV ? <ScenePerformanceProbe /> : null}
       </Canvas>
 
       <div className="canvas-overlay canvas-overlay-top">
@@ -32,7 +36,7 @@ export function EarthCanvas() {
           {isOrbitMode
             ? '拖动旋转 · 地轴保持空间平行 · 黄赤交角 23°26′ · 日地非等比例'
             : isDayNightMode
-              ? '拖动旋转 · 日期与晨昏线同步 · 晨线青色 · 昏线橙色'
+              ? '固定世界太阳方向 · 地球自西向东旋转 · 晨线青色 · 昏线橙色'
             : '拖动旋转 · 滚轮缩放 · 地轴倾角 23°26′ · 日地非等比例'}
         </strong>
       </div>
@@ -43,34 +47,7 @@ export function EarthCanvas() {
         <div className="education-scene-message">{educationOverlayMessage}</div>
       ) : null}
 
-      <div className="canvas-overlay canvas-overlay-bottom reference-legend">
-        {isOrbitMode ? (
-          <>
-            <span><i className="legend-line orbit" />公转轨道</span>
-            <span><i className="legend-line ecliptic" />黄道面</span>
-            <span><i className="legend-line equator" />赤道面</span>
-            <span><i className="legend-line axis" />地轴</span>
-            <span><i className="legend-line sunlight" />平行太阳光</span>
-          </>
-        ) : isDayNightMode ? (
-          <>
-            <span><i className="legend-line day-arc" />昼弧</span>
-            <span><i className="legend-line night-arc" />夜弧</span>
-            <span><i className="legend-line dawn-line" />晨线</span>
-            <span><i className="legend-line dusk-line" />昏线</span>
-            <span><i className="legend-line sunlight" />平行太阳光</span>
-          </>
-        ) : (
-          <>
-            <span><i className="legend-line axis" />地轴</span>
-            <span><i className="legend-line equator" />赤道</span>
-            <span><i className="legend-line tropic" />南北回归线 23°26′</span>
-            <span><i className="legend-line polar" />南北极圈 66°34′</span>
-            <span><i className="legend-line selected-latitude" />所选纬线</span>
-            <span><i className="legend-line sunlight" />平行太阳光</span>
-          </>
-        )}
-      </div>
+      <SceneLegend />
     </div>
   )
 }

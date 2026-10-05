@@ -3,15 +3,24 @@ import { useEffect, useMemo, useRef } from 'react'
 import {
   AdditiveBlending,
   DirectionalLight,
-  MathUtils,
+  Matrix4,
+  Quaternion,
   type Object3D,
   Vector3,
 } from 'three'
 import { EARTH_RADIUS } from '../../lib/earthCoordinates'
+import { teachingOverlayStyle } from '../../config/teachingOverlayStyle'
+import {
+  createSunDirectionVector,
+  getFixedSunPosition,
+  getSunlightPropagationDirection,
+} from '../../domain/solar/solarDirection'
+import { useEarthLabStore } from '../../store/useEarthLabStore'
 
-const SUN_POSITION_X = 4
+const EARTH_CENTER = new Vector3(0, 0, 0)
+const Y_AXIS = new Vector3(0, 1, 0)
+const SUN_VISUAL_DISTANCE = 4
 const SUN_RADIUS = 0.48
-const RAY_START_X = SUN_POSITION_X - SUN_RADIUS * 0.72
 const RAY_OFFSETS = [-1.82, -1.08, 0, 1.08, 1.82]
 
 interface SunRay {
@@ -21,33 +30,48 @@ interface SunRay {
   arrow: Vector3
 }
 
-function calculateRayEndX(offset: number): number {
+function calculateRayEnd(offset: number): Vector3 {
   const squaredDistanceFromAxis = offset * offset
   const squaredRadius = EARTH_RADIUS * EARTH_RADIUS
+  const verticalOffset = Y_AXIS.clone().multiplyScalar(offset)
 
   if (squaredDistanceFromAxis >= squaredRadius) {
-    return -2.45
+    return EARTH_CENTER.clone()
+      .addScaledVector(getSunlightPropagationDirection(), 2.45)
+      .add(verticalOffset)
   }
 
-  return Math.sqrt(squaredRadius - squaredDistanceFromAxis) + 0.035
+  return EARTH_CENTER.clone()
+    .addScaledVector(
+      createSunDirectionVector(),
+      Math.sqrt(squaredRadius - squaredDistanceFromAxis) + 0.035,
+    )
+    .add(verticalOffset)
 }
 
 export function SunSystem() {
+  const showRays = useEarthLabStore((state) => state.teachingLayers.parallelSunRays)
+  const showDirection = useEarthLabStore((state) => state.teachingLayers.solarDirection)
   const lightRef = useRef<DirectionalLight>(null)
   const targetRef = useRef<Object3D>(null)
-  const rays = useMemo<SunRay[]>(
-    () =>
-      RAY_OFFSETS.map((offset) => {
-        const endX = calculateRayEndX(offset)
+  const solarGeometry = useMemo(() => {
+    const propagation = getSunlightPropagationDirection()
+    const sunPosition = getFixedSunPosition(EARTH_CENTER, SUN_VISUAL_DISTANCE)
+    const rayStart = sunPosition.clone().addScaledVector(propagation, SUN_RADIUS * 0.72)
+    const arrowQuaternion = new Quaternion().setFromUnitVectors(Y_AXIS, propagation)
+    const rays: SunRay[] = RAY_OFFSETS.map((offset) => {
+        const start = rayStart.clone().addScaledVector(Y_AXIS, offset)
+        const end = calculateRayEnd(offset)
         return {
           id: `sun-ray-${offset}`,
-          start: new Vector3(RAY_START_X, offset, 0),
-          end: new Vector3(endX, offset, 0),
-          arrow: new Vector3(MathUtils.lerp(RAY_START_X, endX, 0.54), offset, 0),
+          start,
+          end,
+          arrow: start.clone().lerp(end, 0.54),
         }
-      }),
-    [],
-  )
+      })
+    return { arrowQuaternion, rays, sunPosition }
+  }, [])
+  const fixedWorldMatrix = useMemo(() => new Matrix4().identity(), [])
 
   useEffect(() => {
     const light = lightRef.current
@@ -59,16 +83,16 @@ export function SunSystem() {
   }, [])
 
   return (
-    <group>
+    <group name="SolarReferenceFrame" matrix={fixedWorldMatrix} matrixAutoUpdate={false}>
       <object3D ref={targetRef} position={[0, 0, 0]} />
       <directionalLight
         ref={lightRef}
-        position={[SUN_POSITION_X, 0, 0]}
+        position={solarGeometry.sunPosition}
         intensity={3.2}
         color="#fff1d2"
       />
 
-      <group position={[SUN_POSITION_X, 0, 0]}>
+      <group position={solarGeometry.sunPosition}>
         <mesh>
           <sphereGeometry args={[SUN_RADIUS, 64, 48]} />
           <meshBasicMaterial color="#ffb52e" toneMapped={false} />
@@ -86,21 +110,27 @@ export function SunSystem() {
         </mesh>
       </group>
 
-      {rays.map((ray) => (
+      {showRays || showDirection ? solarGeometry.rays.map((ray) => (
         <group key={ray.id}>
-          <Line
-            points={[ray.start, ray.end]}
-            color="#fbbf24"
-            transparent
-            opacity={0.48}
-            lineWidth={1.15}
-          />
-          <mesh position={ray.arrow} rotation={[0, 0, Math.PI / 2]}>
-            <coneGeometry args={[0.045, 0.16, 14]} />
-            <meshBasicMaterial color="#fbbf24" transparent opacity={0.78} />
-          </mesh>
+          {showRays ? (
+            <Line
+              points={[ray.start, ray.end]}
+              {...teachingOverlayStyle.lines.localSunRay}
+            />
+          ) : null}
+          {showDirection ? (
+            <mesh position={ray.arrow} quaternion={solarGeometry.arrowQuaternion}>
+              <coneGeometry args={[0.045, 0.16, 14]} />
+              <meshBasicMaterial
+                color={teachingOverlayStyle.lines.localSunRay.color}
+                transparent
+                opacity={teachingOverlayStyle.opacity.localSunArrow}
+                depthTest={teachingOverlayStyle.depthTest.world}
+              />
+            </mesh>
+          ) : null}
         </group>
-      ))}
+      )) : null}
     </group>
   )
 }

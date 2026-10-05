@@ -2,18 +2,20 @@ import { OrbitControls } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useRef, type ComponentRef, type RefObject } from 'react'
 import { Vector3 } from 'three'
-import { earthLocalToWorld } from '../../lib/earthCoordinates'
 import { useEarthLabStore } from '../../store/useEarthLabStore'
 import type { CameraViewPreset } from '../../types/lab'
+import {
+  CAMERA_DISTANCE,
+  CAMERA_TRANSITION_DURATION_SECONDS,
+  getDayNightCameraPose,
+  getEarthCameraPose,
+  getOrbitCameraPose,
+} from '../systems/camera/cameraPresets'
+import { getLabModuleRuntimeConfig } from '../../config/labModuleRegistry'
 
 interface CameraControllerProps {
   controlsRef: RefObject<ComponentRef<typeof OrbitControls> | null>
-}
-
-interface CameraPose {
-  position: Vector3
-  up: Vector3
-  target: Vector3
+  onTransitionComplete?: (preset: CameraViewPreset) => void
 }
 
 interface CameraTransition {
@@ -26,92 +28,10 @@ interface CameraTransition {
   targetTarget: Vector3
 }
 
-const CAMERA_DISTANCE = 5.7
-const TRANSITION_DURATION = 0.72
-
-function getOrbitCameraPose(preset: CameraViewPreset, cameraDistance: number): CameraPose {
-  const systemDistance = cameraDistance * 3.7
-
-  switch (preset) {
-    case 'north-pole':
-      return {
-        position: new Vector3(0, systemDistance * 1.16, 0.001),
-        up: new Vector3(0, 0, -1),
-        target: new Vector3(),
-      }
-    case 'south-pole':
-      return {
-        position: new Vector3(0, -systemDistance * 1.16, 0.001),
-        up: new Vector3(0, 0, 1),
-        target: new Vector3(),
-      }
-    case 'equator':
-      return {
-        position: new Vector3(0, 2.4, systemDistance),
-        up: new Vector3(0, 1, 0),
-        target: new Vector3(),
-      }
-    case 'default':
-      return {
-        position: new Vector3(0.82, 0.52, 1).normalize().multiplyScalar(systemDistance),
-        up: new Vector3(0, 1, 0),
-        target: new Vector3(),
-      }
-  }
-}
-
-function getEarthCameraPose(
-  preset: CameraViewPreset,
-  cameraDistance: number,
-  earthTarget = new Vector3(),
-): CameraPose {
-  switch (preset) {
-    case 'north-pole':
-      return {
-        position: earthLocalToWorld(new Vector3(0, cameraDistance, 0)).add(earthTarget),
-        up: earthLocalToWorld(new Vector3(1, 0, 0)).normalize(),
-        target: earthTarget,
-      }
-    case 'south-pole':
-      return {
-        position: earthLocalToWorld(new Vector3(0, -cameraDistance, 0)).add(earthTarget),
-        up: earthLocalToWorld(new Vector3(1, 0, 0)).normalize(),
-        target: earthTarget,
-      }
-    case 'equator':
-      return {
-        position: new Vector3(0, 0.2, cameraDistance).add(earthTarget),
-        up: new Vector3(0, 1, 0),
-        target: earthTarget,
-      }
-    case 'default': {
-      const target = new Vector3(1.5, 0, 0)
-      const systemDistance = cameraDistance * 1.75
-      return {
-        position: new Vector3(0.55, 0.31, 1)
-          .normalize()
-          .multiplyScalar(systemDistance)
-          .add(target),
-        up: new Vector3(0, 1, 0),
-        target,
-      }
-    }
-  }
-}
-
-function getDayNightCameraPose(preset: CameraViewPreset, cameraDistance: number): CameraPose {
-  if (preset !== 'default') {
-    return getEarthCameraPose(preset, cameraDistance, new Vector3())
-  }
-
-  return {
-    position: new Vector3(0.72, 0.44, 1).normalize().multiplyScalar(cameraDistance),
-    up: new Vector3(0, 1, 0),
-    target: new Vector3(),
-  }
-}
-
-export function CameraController({ controlsRef }: CameraControllerProps) {
+export function CameraController({
+  controlsRef,
+  onTransitionComplete,
+}: CameraControllerProps) {
   const camera = useThree((state) => state.camera)
   const size = useThree((state) => state.size)
   const cameraViewPreset = useEarthLabStore((state) => state.cameraViewPreset)
@@ -123,11 +43,20 @@ export function CameraController({ controlsRef }: CameraControllerProps) {
   useEffect(() => {
     const canvasAspect = size.width / Math.max(size.height, 1)
     const responsiveDistance = CAMERA_DISTANCE * Math.max(1, 1 / canvasAspect)
-    const pose = activeModuleId === 'revolution'
+    const sceneKind = getLabModuleRuntimeConfig(activeModuleId).scene
+    const pose = sceneKind === 'orbit'
       ? getOrbitCameraPose(cameraViewPreset, responsiveDistance)
-      : activeModuleId === 'day-night' || activeModuleId === 'terminator'
-        ? getDayNightCameraPose(cameraViewPreset, responsiveDistance)
+      : sceneKind === 'day-night'
+        ? getDayNightCameraPose(
+            cameraViewPreset,
+            responsiveDistance,
+            new Date(useEarthLabStore.getState().simulationTimeMs),
+            canvasAspect,
+          )
         : getEarthCameraPose(cameraViewPreset, responsiveDistance)
+    const lockSideView =
+      sceneKind === 'day-night' &&
+      cameraViewPreset === 'sun-side'
     transition.current = {
       elapsed: 0,
       startPosition: camera.position.clone(),
@@ -141,6 +70,12 @@ export function CameraController({ controlsRef }: CameraControllerProps) {
     if (controlsRef.current) {
       controlsRef.current.enabled = false
     }
+
+    return () => {
+      if (controlsRef.current && !lockSideView) {
+        controlsRef.current.enabled = true
+      }
+    }
   }, [activeModuleId, camera, cameraViewPreset, cameraViewRequestId, controlsRef, size.height, size.width])
 
   useFrame((_, delta) => {
@@ -148,7 +83,10 @@ export function CameraController({ controlsRef }: CameraControllerProps) {
     if (!activeTransition) return
 
     activeTransition.elapsed += delta
-    const progress = Math.min(activeTransition.elapsed / TRANSITION_DURATION, 1)
+    const progress = Math.min(
+      activeTransition.elapsed / CAMERA_TRANSITION_DURATION_SECONDS,
+      1,
+    )
     const eased = 1 - Math.pow(1 - progress, 3)
 
     camera.position.lerpVectors(
@@ -175,10 +113,16 @@ export function CameraController({ controlsRef }: CameraControllerProps) {
     if (progress === 1) {
       if (controls) {
         controls.target.copy(activeTransition.targetTarget)
-        controls.enabled = true
+        const state = useEarthLabStore.getState()
+        const activeScene = getLabModuleRuntimeConfig(state.activeModuleId).scene
+        controls.enabled = !(
+          activeScene === 'day-night' &&
+          state.cameraViewPreset === 'sun-side'
+        )
         controls.update()
       }
       transition.current = null
+      onTransitionComplete?.(useEarthLabStore.getState().cameraViewPreset)
     }
   })
 

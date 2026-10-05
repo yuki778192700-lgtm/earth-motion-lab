@@ -5,6 +5,7 @@ import {
   solarNoonAltitude,
   subsolarPoint,
 } from '../lib/geography'
+import { getLabModuleRuntimeConfig } from '../config/labModuleRegistry'
 import type {
   GeographyQuestion,
   PracticeSnapshot,
@@ -12,8 +13,9 @@ import type {
   QuestionType,
   TeachingStep,
 } from '../types/education'
+import { generateTimeAndZonesQuestion } from './timeAndZonesQuestions'
 
-const QUESTION_TYPES: QuestionType[] = [
+const QUESTION_TYPES = [
   'multiple-choice',
   'true-false',
   'diagram',
@@ -23,7 +25,7 @@ const QUESTION_TYPES: QuestionType[] = [
   'day-length',
   'noon-altitude',
   'local-time',
-]
+] as const satisfies readonly QuestionType[]
 
 function option(id: string, label: string): QuestionOption {
   return { id, label }
@@ -115,15 +117,38 @@ function buildTrueFalse(snapshot: PracticeSnapshot, sequence: number): Geography
 }
 
 function buildDiagram(snapshot: PracticeSnapshot, sequence: number): GeographyQuestion {
+  const declination = solarDeclination(new Date(snapshot.simulationTimeMs))
+  const daylight = dayLength(snapshot.latitudeDegrees, declination)
+  const polarPoint = Math.abs(snapshot.latitudeDegrees) === 90
+  const altitude = solarNoonAltitude(snapshot.latitudeDegrees, declination)
+  const pointState = altitude > 1e-8 ? 'day' : altitude < -1e-8 ? 'night' : 'horizon'
+  const specialArc = daylight === 0 || daylight === 24
+  const initialSceneAction = {
+    moduleId: 'day-night' as const, simulationTimeMs: snapshot.simulationTimeMs,
+    latitudeDegrees: snapshot.latitudeDegrees, dayNightStep: 6 as const,
+    cameraPreset: 'equator' as const,
+    teachingLayers: { ...getLabModuleRuntimeConfig('day-night').defaultLayers },
+  }
   return {
     id: `diagram-${sequence}`,
     type: 'diagram',
     typeLabel: '读图题',
     topic: 'terminator',
-    prompt: '观察模型中所选纬线：黄色高亮弧段表示什么？',
-    options: [option('day-arc', '位于昼半球内的昼弧'), option('night-arc', '位于夜半球内的夜弧'), option('equator', '赤道'), option('terminator', '晨昏线')],
-    correctAnswerId: 'day-arc',
-    explanation: '黄色弧段位于朝向太阳的昼半球内，因此是昼弧；其长度比例决定昼长。',
+    prompt: polarPoint
+      ? '所选纬度是极点，纬线退化为点。按当前几何光照模型，这个极点位于哪里？'
+      : specialArc ? '观察所选纬线与昼夜半球：当前哪一项描述正确？'
+        : '观察模型中所选纬线：黄色高亮弧段表示什么？',
+    options: polarPoint
+      ? [option('day', '昼半球'), option('night', '夜半球'), option('horizon', '晨昏分界上（太阳中心在地平线上）'), option('ring', '极点仍有非零半径的纬线圈')]
+      : specialArc
+        ? [option('full-day', '整条纬线在昼半球，没有夜弧'), option('full-night', '整条纬线在夜半球，没有昼弧'), option('equal', '昼弧与夜弧等长'), option('none', '纬线没有任何受光关系')]
+        : [option('day-arc', '位于昼半球内的昼弧'), option('night-arc', '位于夜半球内的夜弧'), option('equator', '赤道'), option('terminator', '晨昏线')],
+    correctAnswerId: polarPoint ? pointState : specialArc ? daylight === 24 ? 'full-day' : 'full-night' : 'day-arc',
+    explanation: polarPoint
+      ? `极点纬线半径为零，不能读作昼弧夜弧。当前太阳中心高度${altitude.toFixed(4)}°，${pointState === 'day' ? '处于昼半球' : pointState === 'night' ? '处于夜半球' : '处于地平线边界'}；不把边界的12小时约定理解为日常升落。`
+      : specialArc ? `几何昼长为${daylight}小时，${daylight === 24 ? '没有夜弧' : '没有昼弧'}，不能要求观察不存在的弧段。`
+        : '黄色弧段位于朝向太阳的昼半球内，因此是昼弧；其长度比例决定昼长。',
+    initialSceneAction,
     explanationSteps: dayNightExplanationSteps(snapshot, snapshot.latitudeDegrees),
   }
 }
@@ -260,7 +285,7 @@ function buildLocalTime(snapshot: PracticeSnapshot, sequence: number): Geography
   }
 }
 
-export function generateQuestion(snapshot: PracticeSnapshot, sequence: number): GeographyQuestion {
+function generateLegacyQuestion(snapshot: PracticeSnapshot, sequence: number): GeographyQuestion {
   const type = QUESTION_TYPES[((sequence % QUESTION_TYPES.length) + QUESTION_TYPES.length) % QUESTION_TYPES.length]!
   switch (type) {
     case 'multiple-choice': return buildMultipleChoice(snapshot, sequence)
@@ -273,4 +298,12 @@ export function generateQuestion(snapshot: PracticeSnapshot, sequence: number): 
     case 'noon-altitude': return buildNoonAltitude(snapshot, sequence)
     case 'local-time': return buildLocalTime(snapshot, sequence)
   }
+}
+
+/** 稳定轮换选项位置；ID不变，相同场景和序号仍可复现。 */
+export function generateQuestion(snapshot: PracticeSnapshot, sequence: number): GeographyQuestion {
+  const question = generateTimeAndZonesQuestion(snapshot, sequence) ?? generateLegacyQuestion(snapshot, sequence)
+  const count = question.options.length
+  const shift = ((sequence % count) + count) % count
+  return { ...question, options: [...question.options.slice(shift), ...question.options.slice(0, shift)] }
 }

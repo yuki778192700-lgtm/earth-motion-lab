@@ -56,7 +56,7 @@ export function calculateEarthRotationMetrics(
 }
 
 /**
- * 固定太阳位于世界坐标 +X 时，计算地球绕局部 +Y 轴的自转角。
+ * 固定太阳位于世界坐标 -X 时，计算地球绕局部 +Y 轴的自转角。
  * 12:00 UTC 时本初子午线朝向太阳；角度随时间正向增加，即自西向东。
  */
 export function getEarthRotationAngleRadians(simulationTimeMs: number): number {
@@ -66,7 +66,7 @@ export function getEarthRotationAngleRadians(simulationTimeMs: number): number {
 
   const elapsed = simulationTimeMs - REFERENCE_PRIME_MERIDIAN_NOON_UTC
   const dayFraction = positiveModulo(elapsed, SOLAR_DAY_MILLISECONDS) / SOLAR_DAY_MILLISECONDS
-  return dayFraction * Math.PI * 2
+  return positiveModulo(Math.PI + dayFraction * Math.PI * 2, Math.PI * 2)
 }
 
 /**

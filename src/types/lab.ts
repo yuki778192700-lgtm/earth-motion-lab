@@ -23,8 +23,14 @@ export interface LabModule {
   index: number
 }
 
-export type SimulationSpeed = 1 | 10 | 100 | 1000
+export type { SimulationSpeed } from '../domain/simulation/playback'
 
-export type CameraViewPreset = 'default' | 'north-pole' | 'south-pole' | 'equator'
+export type CameraViewPreset =
+  | 'default'
+  | 'north-pole'
+  | 'south-pole'
+  | 'equator'
+  | 'terminator'
+  | 'sun-side'
 
 export type DayNightStep = 1 | 2 | 3 | 4 | 5 | 6

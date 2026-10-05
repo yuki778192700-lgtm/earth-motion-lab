@@ -13,6 +13,7 @@ import {
 import { getEarthRotationAngleRadians } from './rotation/earthRotation'
 import { calculateLatitudeArcGeometry, calculateTerminatorGeometry } from './dayNight/dayNightGeometry'
 import { dayLength, solarDeclination, subsolarPoint } from '../lib/geography'
+import { createSunDirectionVector } from './solar/solarDirection'
 
 function normalizeLongitude(longitudeDegrees: number): number {
   return ((longitudeDegrees + 180) % 360 + 360) % 360 - 180
@@ -61,14 +62,17 @@ describe('Three.js 经纬度与纹理坐标一致性', () => {
 })
 
 describe('自转与公转方向一致性', () => {
-  it('地球自转使本初子午线向东经方向移动', () => {
+  it('正午本初子午线朝向统一太阳方向，随后保持自西向东旋转', () => {
     const noon = Date.parse('1970-01-01T12:00:00.000Z')
     const sixHoursLater = noon + 6 * 3_600_000
-    const angle = getEarthRotationAngleRadians(sixHoursLater)
-    const rotatedPrimeMeridian = latitudeLongitudeToVector3(0, 0, 1)
-      .applyAxisAngle(new Vector3(0, 1, 0), angle)
-    const east90 = latitudeLongitudeToVector3(0, 90, 1)
-    expect(rotatedPrimeMeridian.distanceTo(east90)).toBeLessThan(1e-10)
+    const noonPrimeMeridian = latitudeLongitudeToVector3(0, 0, 1)
+      .applyAxisAngle(new Vector3(0, 1, 0), getEarthRotationAngleRadians(noon))
+    const laterPrimeMeridian = latitudeLongitudeToVector3(0, 0, 1)
+      .applyAxisAngle(new Vector3(0, 1, 0), getEarthRotationAngleRadians(sixHoursLater))
+    expect(noonPrimeMeridian.dot(createSunDirectionVector())).toBeCloseTo(1, 12)
+    expect(
+      noonPrimeMeridian.clone().cross(laterPrimeMeridian).dot(new Vector3(0, 1, 0)),
+    ).toBeGreaterThan(0)
   })
 
   it('从北黄极观察，春分到夏至的公转角动量指向 +Y', () => {

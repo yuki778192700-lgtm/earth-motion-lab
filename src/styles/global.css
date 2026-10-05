@@ -421,6 +421,73 @@ input:focus-visible {
   gap: 6px;
 }
 
+.teaching-layers-panel {
+  position: absolute;
+  top: 62px;
+  right: 20px;
+  z-index: 5;
+  width: min(318px, calc(100% - 40px));
+  padding: 13px;
+  border: 1px solid rgba(103, 232, 249, 0.2);
+  border-radius: 8px;
+  background: rgba(3, 9, 20, 0.94);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.38);
+  backdrop-filter: blur(14px);
+}
+
+.teaching-layers-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.teaching-layers-heading strong {
+  color: #dffbff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.teaching-layers-heading span {
+  color: #6f8c98;
+  font-size: 0.66rem;
+}
+
+.teaching-layers-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.teaching-layers-grid label {
+  display: flex;
+  align-items: center;
+  min-height: 30px;
+  gap: 7px;
+  padding: 5px 7px;
+  border: 1px solid rgba(108, 142, 154, 0.14);
+  border-radius: 4px;
+  color: #91aab4;
+  background: rgba(13, 28, 47, 0.5);
+  font-size: 0.68rem;
+  cursor: pointer;
+}
+
+.teaching-layers-grid label:hover {
+  border-color: rgba(103, 232, 249, 0.24);
+  color: #dffbff;
+}
+
+.teaching-layers-grid input {
+  width: 13px;
+  height: 13px;
+  margin: 0;
+  accent-color: #67e8f9;
+}
+
 .grid-icon {
   font-size: 0.95rem;
   line-height: 1;
@@ -720,6 +787,77 @@ input:focus-visible {
   line-height: 1.75;
 }
 
+.thermal-zone-label { padding: 3px 7px; border-radius: 4px; background: rgba(3,9,20,.82); white-space: nowrap; font-size: 12px; pointer-events: none; }
+.thermal-zone-panel { display: grid; gap: 10px; }
+.thermal-zone-panel p { margin: 0; font-size: .75rem; line-height: 1.7; color: #a8bec7; }
+.thermal-boundary-buttons { display: flex; flex-wrap: wrap; gap: 5px; }
+.thermal-boundary-buttons button { padding: 5px 7px; border: 1px solid #254459; border-radius: 4px; color: #c8dce4; background: #102334; cursor: pointer; font-size: .7rem; }
+.thermal-zone-legend { display: flex; flex-wrap: wrap; gap: 8px; font-size: .72rem; }
+.thermal-zone-legend i { display: inline-block; width: 9px; height: 9px; margin-right: 5px; border-radius: 2px; }
+
+.planned-scene-notice {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  display: grid;
+  width: min(420px, calc(100% - 40px));
+  gap: 5px;
+  padding: 12px 16px;
+  border: 1px solid rgba(103, 232, 249, 0.28);
+  border-radius: 7px;
+  color: #c8dce4;
+  background: rgba(3, 9, 20, 0.86);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.34);
+  line-height: 1.55;
+  text-align: center;
+  transform: translateX(-50%);
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+}
+
+.planned-scene-notice small {
+  color: var(--cyan);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.61rem;
+  letter-spacing: 0.14em;
+}
+
+.planned-scene-notice strong {
+  color: #f2fbff;
+  font-size: 0.9rem;
+}
+
+.planned-scene-notice span,
+.planned-module-panel p {
+  margin: 0;
+  color: #91a7b0;
+  font-size: 0.72rem;
+}
+
+.planned-module-panel {
+  display: grid;
+  gap: 8px;
+}
+
+.planned-module-panel h2 {
+  margin: 0;
+}
+
+.module-status-badge {
+  justify-self: start;
+  padding: 3px 7px;
+  border: 1px solid rgba(251, 146, 60, 0.34);
+  border-radius: 999px;
+  color: #fdba74;
+  background: rgba(251, 146, 60, 0.08);
+  font-size: 0.63rem;
+}
+
+.planned-module-panel .planned-module-safety {
+  color: #78919b;
+  line-height: 1.6;
+}
+
 .guided-heading-row {
   display: flex;
   align-items: center;
@@ -850,6 +988,56 @@ input:focus-visible {
 
 .day-night-status[data-state="polar-night"] strong {
   color: #c4b5fd;
+}
+
+.observer-marker-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px 10px;
+  margin-top: 8px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: rgba(13, 28, 47, 0.48);
+}
+
+.observer-marker-control span {
+  color: #829eaa;
+  font-size: 0.68rem;
+}
+
+.observer-marker-control strong {
+  color: #fde047;
+  font-size: 0.72rem;
+}
+
+.observer-marker-control strong[data-state="night"] {
+  color: #c4b5fd;
+}
+
+.observer-marker-control strong[data-state="sunrise"] {
+  color: #67e8f9;
+}
+
+.observer-marker-control strong[data-state="sunset"] {
+  color: #fdba74;
+}
+
+.observer-marker-control button {
+  grid-column: 1 / -1;
+  padding: 5px 7px;
+  border: 1px solid rgba(103, 232, 249, 0.2);
+  border-radius: 4px;
+  color: #91a7b0;
+  background: rgba(8, 126, 156, 0.08);
+  font-size: 0.66rem;
+  cursor: pointer;
+}
+
+.observer-marker-control button[aria-pressed="true"] {
+  color: var(--cyan);
+  background: rgba(8, 126, 156, 0.2);
 }
 
 .rotation-heading-row {
@@ -1405,6 +1593,7 @@ input:focus-visible {
 }
 
 .subsolar-label,
+.observer-marker-label,
 .solar-altitude-label {
   display: inline-flex;
   padding: 5px 7px;
@@ -1416,6 +1605,33 @@ input:focus-visible {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.66rem;
   white-space: nowrap;
+}
+
+.observer-marker-label[data-state="night"] {
+  border-color: rgba(167, 139, 250, 0.55);
+  color: #ddd6fe;
+}
+
+/* 教学标签保持屏幕字号，继承统一间距；只读文字不拦截相机拖动。 */
+.teaching-label-content {
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.teaching-label-content > span {
+  font-size: inherit;
+  line-height: inherit;
+  padding: 4px 7px;
+}
+
+.observer-marker-label[data-state="sunrise"] {
+  border-color: rgba(34, 211, 238, 0.55);
+  color: #67e8f9;
+}
+
+.observer-marker-label[data-state="sunset"] {
+  border-color: rgba(251, 146, 60, 0.55);
+  color: #fdba74;
 }
 
 .solar-altitude-label {
@@ -1607,6 +1823,13 @@ input:focus-visible {
     overflow-x: auto;
   }
 
+  .teaching-layers-panel {
+    top: 110px;
+    right: 14px;
+    left: 14px;
+    width: auto;
+  }
+
   .scene-toolbar button {
     flex: 1 0 auto;
   }
@@ -1761,4 +1984,128 @@ input:focus-visible {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
+}
+.local-time-panel { display: grid; gap: 12px; min-width: 220px; }
+.date-line-panel { display: grid; gap: 12px; min-width: 240px; }
+.subsolar-annual-panel { display: grid; grid-auto-rows: max-content; align-content: start; gap: 12px; min-width: 250px; }
+.solar-noon-annual-panel { display: grid; grid-auto-rows: max-content; align-content: start; gap: 12px; min-width: 250px; }
+.hemisphere-seasons-panel { display: grid; grid-auto-rows: max-content; align-content: start; gap: 12px; min-width: 250px; }
+.polar-annual-panel { display: grid; grid-auto-rows: max-content; align-content: start; gap: 12px; min-width: 250px; }
+.obliquity-panel { display: grid; grid-auto-rows: max-content; align-content: start; gap: 12px; min-width: 250px; }
+.day-length-annual-panel { display: grid; grid-auto-rows: max-content; align-content: start; gap: 12px; min-width: 250px; }
+.day-length-annual-panel p { margin: 0; font-size: .73rem; line-height: 1.7; color: #a8bec7; }
+.day-length-annual-panel label { display: grid; gap: 8px; font-size: .76rem; }
+.day-length-annual-panel input { width: 100%; accent-color: #67e8f9; }
+.day-length-annual-panel output { color: #67e8f9; font-size: .8rem; }
+.day-length-solar-times { display: grid; gap: 7px; font-size: .73rem; margin: 0; }
+.day-length-solar-times dd { margin: 0; color: #67e8f9; }
+.day-length-event-list { display: grid; gap: 7px; }
+.day-length-event-list button { display: grid; gap: 5px; padding: 10px; border: 1px solid #254459; border-radius: 6px; background: #102334; color: #c8dce4; text-align: left; font-size: .73rem; cursor: pointer; }
+.day-length-event-list strong { font-weight: 500; color: #67e8f9; }
+.lab-shell[data-annual-orbit="true"] { grid-template-rows: 68px minmax(0, 1fr) 230px; }
+.annual-orbit-controller { display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: 10px; padding: 12px 22px; overflow-y: auto; }
+.annual-orbit-heading { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; font-size: .75rem; color: #b5cdd6; }
+.annual-orbit-track { position: relative; padding: 5px 12px 52px; }
+.annual-month-ticks, .annual-event-ticks { position: absolute; left: 12px; right: 12px; height: 22px; }
+.annual-month-ticks { top: 22px; }
+.annual-event-ticks { top: 45px; }
+.annual-month-ticks button, .annual-event-ticks button { position: absolute; transform: translateX(-50%); padding: 2px; border: 0; background: transparent; color: #a8bec7; font-size: .65rem; cursor: pointer; white-space: nowrap; }
+.annual-event-ticks button { color: #67e8f9; border-top: 2px solid #67e8f9; }
+.annual-orbit-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.annual-orbit-actions button { border: 1px solid #254459; border-radius: 4px; padding: 5px 7px; font-size: .7rem; background: #102334; color: #c8dce4; cursor: pointer; }
+.annual-orbit-actions button[aria-pressed="true"] { border-color: #67e8f9; color: #67e8f9; }
+.annual-orbit-actions button:disabled { opacity: .4; cursor: default; }
+.annual-duration-control { display: flex; gap: 4px; }
+.annual-orbit-actions label { display: flex; gap: 4px; align-items: center; font-size: .7rem; }
+.annual-orbit-controller p, .orbit-annual-season-data p { margin: 0; color: #a8bec7; font-size: .7rem; line-height: 1.6; }
+.orbit-annual-season-data { display: grid; gap: 9px; margin-top: 12px; }
+.orbit-lesson-panel { display: grid; grid-auto-rows: max-content; align-content: start; gap: 12px; min-width: 250px; }
+.orbit-lesson-panel p { margin: 0; font-size: .73rem; line-height: 1.7; color: #a8bec7; }
+.orbit-lesson-steps, .orbit-lesson-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.orbit-lesson-panel button { padding: 7px; border: 1px solid #254459; border-radius: 4px; background: #102334; color: #c8dce4; font-size: .72rem; cursor: pointer; }
+.orbit-lesson-panel button[aria-pressed="true"] { border-color: #67e8f9; color: #67e8f9; }
+.orbit-lesson-panel button:disabled { opacity: .4; cursor: default; }
+.orbit-lesson-table { width: 100%; border-collapse: collapse; font-size: .73rem; }
+.orbit-lesson-table caption { padding-bottom: 8px; text-align: left; color: #a8bec7; }
+.orbit-lesson-table th, .orbit-lesson-table td { padding: 8px 4px; border-bottom: 1px solid #254459; text-align: left; }
+.orbit-lesson-table td { color: #67e8f9; }
+.orbit-annual-trends-panel { display: grid; grid-auto-rows: max-content; align-content: start; gap: 12px; min-width: 250px; }
+.orbit-annual-trends-panel p { margin: 0; color: #a8bec7; font-size: .73rem; line-height: 1.7; }
+.orbit-annual-trends-panel figure { margin: 0; display: grid; gap: 8px; }
+.orbit-annual-trends-panel figcaption { font-size: .76rem; color: #c8dce4; }
+.orbit-annual-trends-panel output { font-size: .73rem; color: #67e8f9; }
+.orbit-trends-legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: .72rem; }
+.orbit-trends-legend span:first-child { color: #facc15; }
+.orbit-trends-legend span:last-child { color: #f9a8d4; }
+@media (max-width: 1100px) { .lab-shell[data-annual-orbit="true"] { grid-template-rows: 68px minmax(360px, 1fr) auto 230px; } }
+@media (max-width: 760px) { .lab-shell[data-annual-orbit="true"] { grid-template-rows: 62px 60px 390px auto auto; } .annual-orbit-controller { padding: 14px 16px; overflow: visible; } }
+.obliquity-panel p { margin: 0; color: #a8bec7; font-size: .73rem; line-height: 1.7; }
+.obliquity-panel h3 { margin: 0; font-size: .8rem; }
+.obliquity-angle-table { border-collapse: collapse; width: 100%; font-size: .73rem; }
+.obliquity-angle-table caption { color: #a8bec7; padding-bottom: 8px; text-align: left; }
+.obliquity-angle-table th, .obliquity-angle-table td { padding: 9px 5px; border-bottom: 1px solid #254459; text-align: left; }
+.obliquity-angle-table th { font-weight: 500; }
+.obliquity-angle-table td { color: #67e8f9; white-space: nowrap; }
+.obliquity-angle-table small { display: block; margin-top: 4px; color: #a8bec7; }
+.polar-annual-panel p { margin: 0; font-size: .73rem; line-height: 1.7; color: #a8bec7; }
+.polar-annual-panel label { display: grid; gap: 8px; font-size: .76rem; }
+.polar-annual-panel input { width: 100%; accent-color: #67e8f9; }
+.polar-annual-panel output { color: #67e8f9; font-size: .85rem; }
+.polar-range-summary { display: grid; gap: 8px; padding: 10px; border: 1px solid #254459; border-radius: 6px; background: #102334; }
+.hemisphere-seasons-panel p { margin: 0; font-size: .73rem; line-height: 1.7; color: #a8bec7; }
+.hemisphere-seasons-panel label { display: grid; gap: 8px; font-size: .76rem; }
+.hemisphere-seasons-panel input { width: 100%; accent-color: #67e8f9; }
+.hemisphere-comparison { display: grid; gap: 10px; }
+.hemisphere-comparison article { padding: 12px; border: 1px solid #254459; border-radius: 6px; background: #102334; }
+.hemisphere-comparison h3 { margin: 0 0 8px; font-size: .85rem; }
+.hemisphere-comparison strong { color: #67e8f9; font-size: .8rem; }
+.hemisphere-comparison dl { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: .75rem; margin-bottom: 0; }
+.hemisphere-comparison dd { margin: 0; text-align: right; }
+.solar-noon-annual-panel p { margin: 0; font-size: .73rem; line-height: 1.7; color: #a8bec7; }
+.solar-noon-annual-panel label { display: grid; gap: 8px; font-size: .76rem; }
+.solar-noon-annual-panel input[type="range"] { width: 100%; accent-color: #67e8f9; }
+.solar-noon-annual-panel output { color: #67e8f9; font-size: .9rem; }
+.noon-season-comparison { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.noon-season-comparison button { padding: 6px; border: 1px solid #254459; border-radius: 4px; background: #102334; color: #c8dce4; cursor: pointer; font-size: .72rem; }
+.subsolar-annual-panel p { margin: 0; font-size: .73rem; line-height: 1.7; color: #a8bec7; }
+.subsolar-annual-panel output { font-size: .75rem; color: #67e8f9; }
+.annual-declination-chart { display: block; width: 100%; height: auto; background: #102334; border-radius: 5px; }
+.annual-declination-chart text { font-size: 9px; fill: #c8dce4; }
+.subsolar-explanation { padding: 9px; border-left: 2px solid #67e8f9; background: #102334; font-size: .78rem; }
+.subsolar-annual-panel button:disabled { opacity: .4; cursor: default; }
+.date-line-panel p { margin: 0; font-size: .73rem; line-height: 1.7; color: #a8bec7; }
+.date-line-panel label { display: grid; gap: 8px; font-size: .75rem; }
+.date-line-panel input[type="range"] { width: 100%; accent-color: #67e8f9; }
+.date-line-clock { display: grid; gap: 6px; padding: 9px; border: 1px solid #254459; border-radius: 5px; font-size: .78rem; }
+.date-line-clock output { font-family: ui-monospace, monospace; }
+.local-time-panel p { margin: 0; color: #a8bec7; font-size: .73rem; line-height: 1.7; }
+.local-time-point { display: grid; gap: 8px; padding: 10px; border: 1px solid; border-radius: 6px; background: rgba(9,24,39,.6); }
+.local-time-point strong { font-size: .8rem; }
+.local-time-point output { font-family: ui-monospace, monospace; font-size: .8rem; }
+.local-time-point small { color: #91a7b0; font-size: .68rem; }
+.fixed-offset-clock { display: grid; gap: 7px; padding-top: 8px; border-top: 1px solid #254459; }
+.fixed-offset-clock label { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px; font-size: .72rem; }
+.fixed-offset-clock select { max-width: 100%; padding: 5px; color: #c8dce4; background: #102334; border: 1px solid #254459; border-radius: 4px; }
+.fixed-offset-clock span { font-size: .7rem; color: #91a7b0; }
+.local-time-point input[type="range"] { width: 100%; accent-color: #67e8f9; }
+.local-time-presets { display: flex; flex-wrap: wrap; gap: 4px; }
+.local-time-presets button, .local-time-demo { padding: 5px 7px; border: 1px solid #254459; border-radius: 4px; background: #102334; color: #c8dce4; cursor: pointer; font-size: .7rem; }
+.local-time-utc { display: flex; justify-content: space-between; gap: 8px; align-items: center; font-size: .75rem; }
+.local-time-utc { flex-wrap: wrap; }
+.local-time-utc label { display: flex; gap: 8px; align-items: center; }
+.local-time-utc button { padding: 5px 8px; border: 1px solid #254459; border-radius: 4px; color: #c8dce4; background: #102334; cursor: pointer; }
+.local-time-utc [role="alert"] { flex-basis: 100%; color: #f3b58b; }
+.local-time-utc input { max-width: 140px; padding: 5px; color-scheme: dark; color: #c8dce4; background: #102334; border: 1px solid #254459; border-radius: 4px; }
+.local-time-comparison { display: grid; gap: 7px; }
+.local-time-marker { display: block; padding: 3px 5px; background: #030914dd; border-radius: 3px; font-size: 12px; transform: translateY(-22px); pointer-events: none; }
+
+@media (max-width: 1100px) {
+  .data-panel[data-mode="local-time"] {
+    grid-template-columns: 150px 160px 150px minmax(320px, 1fr);
+    max-height: 230px;
+    overflow: auto;
+  }
+  .data-panel[data-mode="date-line"] { grid-template-columns: 150px 160px 150px minmax(320px, 1fr); max-height: 230px; overflow: auto; }
+  .data-panel[data-mode="subsolar-annual"] { grid-template-columns: 150px 160px 150px minmax(355px, 1fr); max-height: 230px; overflow: auto; }
+  .data-panel[data-mode="noon-annual"] { grid-template-columns: 150px 160px 150px minmax(355px, 1fr); max-height: 230px; overflow: auto; }
 }

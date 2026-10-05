@@ -1,4 +1,5 @@
 import type { CameraViewPreset, DayNightStep, LabModuleId } from './lab'
+import type { TeachingLayers } from '../config/teachingLayers'
 
 export type LearningMode = 'explore' | 'teach' | 'practice'
 
@@ -11,6 +12,10 @@ export type KnowledgeTopic =
   | 'solar-altitude'
   | 'seasons'
   | 'polar-day-night'
+  | 'climate-zones'
+  | 'local-time'
+  | 'fixed-offset-time'
+  | 'date-line'
 
 export type QuestionType =
   | 'multiple-choice'
@@ -22,6 +27,9 @@ export type QuestionType =
   | 'day-length'
   | 'noon-altitude'
   | 'local-time'
+  | 'thermal-zone'
+  | 'fixed-offset-time'
+  | 'date-line'
 
 export interface SceneAction {
   moduleId?: LabModuleId
@@ -32,6 +40,13 @@ export interface SceneAction {
   showSubsolarMarker?: boolean
   showSolarNoonGuide?: boolean
   overlayMessage?: string
+  localTimeLongitudeA?: number
+  localTimeLongitudeB?: number
+  localTimeOffsetA?: number
+  localTimeOffsetB?: number
+  dateLineDirection?: 'east' | 'west'
+  dateLineProgress?: number
+  teachingLayers?: Partial<TeachingLayers>
 }
 
 export interface TeachingStep {
@@ -63,9 +78,17 @@ export interface GeographyQuestion {
   correctAnswerId: string
   explanation: string
   explanationSteps: TeachingStep[]
+  initialSceneAction?: SceneAction
 }
 
 export interface PracticeSnapshot {
   simulationTimeMs: number
   latitudeDegrees: number
+  activeModuleId?: LabModuleId
+  localTimeLongitudeA?: number
+  localTimeLongitudeB?: number
+  localTimeOffsetA?: number
+  localTimeOffsetB?: number
+  dateLineDirection?: 'east' | 'west'
+  dateLineProgress?: number
 }

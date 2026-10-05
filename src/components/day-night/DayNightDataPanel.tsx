@@ -1,5 +1,9 @@
 import { useMemo } from 'react'
 import { calculateDayNightModel } from '../../domain/dayNight/dayNightModel'
+import {
+  calculateObserverLightingState,
+  type ObserverLightingState,
+} from '../../domain/dayNight/solarReferenceFrame'
 import { useEarthLabStore } from '../../store/useEarthLabStore'
 import { MetricCard } from '../panels/MetricCard'
 import { GuidedExplanation } from './GuidedExplanation'
@@ -25,10 +29,23 @@ function formatSolarTime(hours: number | null, emptyLabel: string): string {
   return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
 }
 
+const OBSERVER_STATE_LABELS: Record<ObserverLightingState, string> = {
+  day: '白昼',
+  night: '黑夜',
+  sunrise: '日出附近（动画提示）',
+  sunset: '日落附近（动画提示）',
+  horizon: '地平线边界',
+}
+
 export function DayNightDataPanel() {
   const simulationTimeMs = useEarthLabStore((state) => state.simulationTimeMs)
   const latitudeDegrees = useEarthLabStore((state) => state.observerLatitudeDegrees)
+  const longitudeDegrees = useEarthLabStore((state) => state.observerLongitudeDegrees)
+  const showObserverMarker = useEarthLabStore((state) => state.showDayNightObserverMarker)
   const setLatitude = useEarthLabStore((state) => state.setObserverLatitude)
+  const toggleObserverMarker = useEarthLabStore(
+    (state) => state.toggleDayNightObserverMarker,
+  )
   const isGuidedMode = useEarthLabStore((state) => state.isDayNightGuidedMode)
   const step = useEarthLabStore((state) => state.dayNightStep)
   const model = useMemo(
@@ -42,6 +59,15 @@ export function DayNightDataPanel() {
       : model.polarState === 'polar-night'
         ? '极夜'
         : '正常昼夜交替'
+  const observerLightingState = useMemo(
+    () =>
+      calculateObserverLightingState(
+        new Date(simulationTimeMs),
+        latitudeDegrees,
+        longitudeDegrees,
+      ),
+    [latitudeDegrees, longitudeDegrees, simulationTimeMs],
+  )
 
   return (
     <>
@@ -69,6 +95,21 @@ export function DayNightDataPanel() {
         <div className="day-night-status" data-state={model.polarState}>
           <span>当前状态</span>
           <strong>{polarLabel}</strong>
+        </div>
+        <div className="observer-marker-control">
+          <span>
+            观察点 {formatLatitude(latitudeDegrees)}，{longitudeDegrees}°E
+          </span>
+          <strong data-state={observerLightingState}>
+            {OBSERVER_STATE_LABELS[observerLightingState]}
+          </strong>
+          <button
+            type="button"
+            aria-pressed={showObserverMarker}
+            onClick={toggleObserverMarker}
+          >
+            {showObserverMarker ? '隐藏 Marker' : '显示 Marker'}
+          </button>
         </div>
       </section>
 

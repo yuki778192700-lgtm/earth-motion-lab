@@ -3,10 +3,17 @@ import { useThree } from '@react-three/fiber'
 import { useEffect } from 'react'
 import { SRGBColorSpace } from 'three'
 import { EARTH_RADIUS } from '../../lib/earthCoordinates'
+import { useEarthLabStore } from '../../store/useEarthLabStore'
+import { getLabModuleRuntimeConfig } from '../../config/labModuleRegistry'
+import { getDayNightVisualStyle } from '../../config/dayNightVisualStyle'
+import { useSolarSideTeachingView } from '../../hooks/useSolarSideTeachingView'
+import { EARTH_LABEL_OCCLUDER_NAME } from '../../config/teachingLabelStyle'
 
 const EARTH_TEXTURE_PATH = '/textures/earth-blue-marble-2048.png'
 
 export function EarthGlobe() {
+  const visualStyle = getDayNightVisualStyle(useSolarSideTeachingView())
+  const isDayNight = useEarthLabStore(state => getLabModuleRuntimeConfig(state.activeModuleId).scene === 'day-night')
   const texture = useTexture(EARTH_TEXTURE_PATH)
   const gl = useThree((state) => state.gl)
 
@@ -17,9 +24,18 @@ export function EarthGlobe() {
   }, [gl, texture])
 
   return (
-    <mesh castShadow receiveShadow>
+    <mesh name={EARTH_LABEL_OCCLUDER_NAME} castShadow receiveShadow>
       <sphereGeometry args={[EARTH_RADIUS, 128, 96]} />
-      <meshStandardMaterial map={texture} roughness={0.82} metalness={0} />
+      <meshPhysicalMaterial
+        map={texture}
+        roughness={0.76}
+        metalness={0}
+        clearcoat={0.08}
+        clearcoatRoughness={0.72}
+        emissiveMap={texture}
+        emissive="#16263b"
+        emissiveIntensity={isDayNight ? visualStyle.surfaceEmissiveIntensity : 0.12}
+      />
     </mesh>
   )
 }

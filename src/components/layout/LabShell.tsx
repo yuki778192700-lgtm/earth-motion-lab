@@ -14,9 +14,10 @@ export function LabShell() {
   useSimulationClock()
   useTeacherPlayback()
   const learningMode = useEarthLabStore((state) => state.learningMode)
+  const activeModuleId = useEarthLabStore(state => state.activeModuleId)
 
   return (
-    <div className="lab-shell">
+    <div className="lab-shell" data-annual-orbit={learningMode === 'explore' && activeModuleId === 'revolution'}>
       <HeaderBar />
       <LabNavigation />
       <main className="scene-region" aria-label="三维地球实验区">

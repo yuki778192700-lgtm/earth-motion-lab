@@ -1,18 +1,21 @@
 import { Line } from '@react-three/drei'
 import { useMemo } from 'react'
 import { calculateLatitudeArcGeometry } from '../../domain/dayNight/dayNightGeometry'
-import { EARTH_RADIUS, latitudeLongitudeToVector3 } from '../../lib/earthCoordinates'
+import { EARTH_RADIUS, createLatitudePath, latitudeLongitudeToVector3 } from '../../lib/earthCoordinates'
+import { teachingOverlayStyle } from '../../config/teachingOverlayStyle'
 
 interface LatitudeDayNightArcsProps {
   date: Date
   latitudeDegrees: number
-  showArcs: boolean
+  showDayArc: boolean
+  showNightArc: boolean
 }
 
 export function LatitudeDayNightArcs({
   date,
   latitudeDegrees,
-  showArcs,
+  showDayArc,
+  showNightArc,
 }: LatitudeDayNightArcsProps) {
   const geometry = useMemo(
     () => calculateLatitudeArcGeometry(date, latitudeDegrees),
@@ -27,8 +30,8 @@ export function LatitudeDayNightArcs({
       ),
     )
   const fullLatitude = useMemo(
-    () => mapCoordinates(geometry.fullLatitude, EARTH_RADIUS * 1.022),
-    [geometry.fullLatitude],
+    () => createLatitudePath(latitudeDegrees, EARTH_RADIUS * 1.022),
+    [latitudeDegrees],
   )
   const dayArc = useMemo(
     () => mapCoordinates(geometry.dayArc, EARTH_RADIUS * 1.032),
@@ -40,13 +43,13 @@ export function LatitudeDayNightArcs({
   )
 
   return (
-    <group renderOrder={8}>
-      <Line points={fullLatitude} color="#e2e8f0" transparent opacity={0.72} lineWidth={1.4} />
-      {showArcs && dayArc.length > 1 ? (
-        <Line points={dayArc} color="#fde047" lineWidth={4} />
+    <group renderOrder={teachingOverlayStyle.renderOrder.arcs}>
+      <Line points={fullLatitude} {...teachingOverlayStyle.lines.latitudeGuide} />
+      {showDayArc && dayArc.length > 1 ? (
+        <Line points={dayArc} {...teachingOverlayStyle.lines.dayArc} />
       ) : null}
-      {showArcs && nightArc.length > 1 ? (
-        <Line points={nightArc} color="#a78bfa" lineWidth={4} />
+      {showNightArc && nightArc.length > 1 ? (
+        <Line points={nightArc} {...teachingOverlayStyle.lines.nightArc} />
       ) : null}
     </group>
   )

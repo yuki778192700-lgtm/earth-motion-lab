@@ -1,7 +1,8 @@
-import { Html } from '@react-three/drei'
 import { useMemo } from 'react'
 import { Quaternion, Vector3 } from 'three'
 import { EARTH_RADIUS, latitudeLongitudeToVector3 } from '../../lib/earthCoordinates'
+import { TeachingLabel } from '../scene/TeachingLabel'
+import { teachingOverlayStyle } from '../../config/teachingOverlayStyle'
 
 interface SubsolarPointMarkerProps {
   latitudeDegrees: number
@@ -29,18 +30,24 @@ export function SubsolarPointMarker({
   )
 
   return (
-    <group position={position} quaternion={orientation} renderOrder={10}>
+    <group position={position} quaternion={orientation} renderOrder={teachingOverlayStyle.renderOrder.marker}>
       <mesh>
         <sphereGeometry args={[0.047, 24, 16]} />
         <meshBasicMaterial color="#facc15" toneMapped={false} />
       </mesh>
       <mesh position={[0, 0, -0.004]}>
         <ringGeometry args={[0.075, 0.094, 48]} />
-        <meshBasicMaterial color="#fde047" transparent opacity={0.9} depthWrite={false} />
+        <meshBasicMaterial
+          color="#fde047"
+          transparent
+          opacity={teachingOverlayStyle.marker.opacity}
+          depthTest={teachingOverlayStyle.marker.depthTest}
+          depthWrite={false}
+        />
       </mesh>
-      <Html position={[0, 0.15, 0.04]} center distanceFactor={5.2}>
+      <TeachingLabel position={[0, 0, 0.04]} role="subsolar">
         <span className="subsolar-label">太阳直射点</span>
-      </Html>
+      </TeachingLabel>
     </group>
   )
 }

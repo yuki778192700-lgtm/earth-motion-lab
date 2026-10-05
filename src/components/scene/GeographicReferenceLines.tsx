@@ -1,55 +1,61 @@
 import { Line } from '@react-three/drei'
-import { useMemo } from 'react'
+import { memo, useMemo } from 'react'
 import {
   EARTH_RADIUS,
   POLAR_CIRCLE_LATITUDE_DEGREES,
   TROPIC_LATITUDE_DEGREES,
   createLatitudePath,
 } from '../../lib/earthCoordinates'
+import { teachingOverlayStyle, type TeachingLineStyle } from '../../config/teachingOverlayStyle'
 
 const REFERENCE_RADIUS = EARTH_RADIUS * 1.011
 
 interface ReferenceLine {
   id: string
+  kind: 'equator' | 'tropic' | 'polarCircle'
   latitude: number
-  color: string
-  width: number
-  opacity: number
+  style: TeachingLineStyle
 }
 
 const REFERENCE_LINES: ReferenceLine[] = [
-  { id: 'equator', latitude: 0, color: '#67e8f9', width: 1.8, opacity: 0.95 },
+  { id: 'equator', kind: 'equator', latitude: 0, style: teachingOverlayStyle.lines.equator },
   {
     id: 'tropic-north',
+    kind: 'tropic',
     latitude: TROPIC_LATITUDE_DEGREES,
-    color: '#fb923c',
-    width: 1.25,
-    opacity: 0.92,
+    style: teachingOverlayStyle.lines.tropic,
   },
   {
     id: 'tropic-south',
+    kind: 'tropic',
     latitude: -TROPIC_LATITUDE_DEGREES,
-    color: '#fb923c',
-    width: 1.25,
-    opacity: 0.92,
+    style: teachingOverlayStyle.lines.tropic,
   },
   {
     id: 'polar-north',
+    kind: 'polarCircle',
     latitude: POLAR_CIRCLE_LATITUDE_DEGREES,
-    color: '#c4b5fd',
-    width: 1.15,
-    opacity: 0.9,
+    style: teachingOverlayStyle.lines.polarCircle,
   },
   {
     id: 'polar-south',
+    kind: 'polarCircle',
     latitude: -POLAR_CIRCLE_LATITUDE_DEGREES,
-    color: '#c4b5fd',
-    width: 1.15,
-    opacity: 0.9,
+    style: teachingOverlayStyle.lines.polarCircle,
   },
 ]
 
-export function GeographicReferenceLines() {
+interface GeographicReferenceLinesProps {
+  showEquator?: boolean
+  showTropics?: boolean
+  showPolarCircles?: boolean
+}
+
+export const GeographicReferenceLines = memo(function GeographicReferenceLines({
+  showEquator = true,
+  showTropics = true,
+  showPolarCircles = true,
+}: GeographicReferenceLinesProps) {
   const paths = useMemo(
     () =>
       REFERENCE_LINES.map((line) => ({
@@ -60,17 +66,18 @@ export function GeographicReferenceLines() {
   )
 
   return (
-    <group renderOrder={4}>
-      {paths.map((line) => (
+    <group name="GeographicReferenceLines">
+      {paths.filter((line) =>
+        (line.kind === 'equator' && showEquator) ||
+        (line.kind === 'tropic' && showTropics) ||
+        (line.kind === 'polarCircle' && showPolarCircles),
+      ).map((line) => (
         <Line
           key={line.id}
           points={line.points}
-          color={line.color}
-          transparent
-          opacity={line.opacity}
-          lineWidth={line.width}
+          {...line.style}
         />
       ))}
     </group>
   )
-}
+})

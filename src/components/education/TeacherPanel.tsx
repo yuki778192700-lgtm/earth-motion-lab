@@ -1,5 +1,7 @@
 import { getTeachingScript, TEACHING_SCRIPTS } from '../../education/teachingScripts'
 import { useEarthLabStore } from '../../store/useEarthLabStore'
+import { getTeachingObservations } from '../../education/teachingObservations'
+import { useShallow } from 'zustand/react/shallow'
 
 export function TeacherPanel() {
   const topic = useEarthLabStore((state) => state.teacherTopic)
@@ -7,6 +9,14 @@ export function TeacherPanel() {
   const selectTopic = useEarthLabStore((state) => state.selectTeacherTopic)
   const script = getTeachingScript(topic)
   const step = script.steps[stepIndex] ?? script.steps[0]!
+  const observationState = useEarthLabStore(useShallow(state => ({
+    simulationTimeMs: state.simulationTimeMs,
+    observerLatitudeDegrees: state.observerLatitudeDegrees,
+    localTimeLongitudeA: state.localTimeLongitudeA, localTimeLongitudeB: state.localTimeLongitudeB,
+    localTimeOffsetA: state.localTimeOffsetA, localTimeOffsetB: state.localTimeOffsetB,
+    dateLineDirection: state.dateLineDirection, dateLineProgress: state.dateLineProgress,
+  })))
+  const observations = getTeachingObservations(topic, observationState)
 
   return (
     <aside className="data-panel education-panel teacher-panel" aria-label="教师演示面板">
@@ -31,6 +41,11 @@ export function TeacherPanel() {
         <h2>{step.title}</h2>
         <p>{step.explanation}</p>
       </section>
+
+      {observations.length > 0 ? <section className="data-section" aria-label="教师演示实时观测数据">
+        <h2>模型观测数据</h2>
+        <dl>{observations.map(row => <div key={row.label}><dt>{row.label}</dt><dd>{row.value}</dd></div>)}</dl>
+      </section> : null}
 
       <section className="data-section">
         <h2>演示流程</h2>

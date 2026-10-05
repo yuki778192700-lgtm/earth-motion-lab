@@ -1,4 +1,5 @@
 import type { TeachingScript } from '../types/education'
+import { TIME_AND_ZONES_TEACHING_SCRIPTS } from './timeAndZonesTeachingScripts'
 
 const MARCH_EQUINOX = Date.parse('2026-03-20T14:46:00.000Z')
 const JUNE_SOLSTICE = Date.parse('2026-06-21T08:24:00.000Z')
@@ -96,6 +97,7 @@ export const TEACHING_SCRIPTS: TeachingScript[] = [
       { title: '北极点冬至', explanation: '半年后北极点背向太阳，进入极夜。', durationMs: 3400, action: { moduleId: 'day-night', simulationTimeMs: DECEMBER_SOLSTICE, latitudeDegrees: 90, dayNightStep: 6, cameraPreset: 'north-pole' } },
     ],
   },
+  ...TIME_AND_ZONES_TEACHING_SCRIPTS,
 ]
 
 export function getTeachingScript(id: TeachingScript['id']): TeachingScript {

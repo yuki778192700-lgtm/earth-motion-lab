@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { TEACHING_SCRIPTS, getTeachingScript } from './teachingScripts'
 
 describe('teaching scripts', () => {
-  it('覆盖八个教师演示知识点，且每个步骤都有场景动作', () => {
-    expect(TEACHING_SCRIPTS).toHaveLength(8)
-    expect(new Set(TEACHING_SCRIPTS.map((script) => script.id)).size).toBe(8)
+  it('覆盖十二个教师演示知识点，且每个步骤都有场景动作', () => {
+    expect(TEACHING_SCRIPTS).toHaveLength(12)
+    expect(new Set(TEACHING_SCRIPTS.map((script) => script.id)).size).toBe(12)
 
     for (const script of TEACHING_SCRIPTS) {
       expect(script.steps.length).toBeGreaterThanOrEqual(3)

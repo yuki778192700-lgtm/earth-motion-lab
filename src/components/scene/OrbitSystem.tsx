@@ -18,6 +18,7 @@ import { EARTH_RADIUS } from '../../lib/earthCoordinates'
 import { useEarthLabStore } from '../../store/useEarthLabStore'
 import { EarthModel } from './EarthModel'
 import { ObliquityIndicator } from './ObliquityIndicator'
+import { teachingOverlayStyle } from '../../config/teachingOverlayStyle'
 
 const SUN_RADIUS = 0.7
 const EARTH_VISUAL_SCALE = 0.55
@@ -33,12 +34,18 @@ function OrbitDirectionArrow({ position, tangent }: { position: Vector3; tangent
   return (
     <mesh position={position} quaternion={quaternion}>
       <coneGeometry args={[0.105, 0.38, 20]} />
-      <meshBasicMaterial color="#fb923c" toneMapped={false} />
+      <meshBasicMaterial color={teachingOverlayStyle.lines.terminatorDusk.color} toneMapped={false} />
     </mesh>
   )
 }
 
-function OrbitSun({ earthPosition }: { earthPosition: Vector3 }) {
+interface OrbitSunProps {
+  earthPosition: Vector3
+  showRays: boolean
+  showDirection: boolean
+}
+
+function OrbitSun({ earthPosition, showRays, showDirection }: OrbitSunProps) {
   const lightRef = useRef<DirectionalLight>(null)
   const targetRef = useRef<Object3D>(null)
   const rays = useMemo(() => {
@@ -92,30 +99,37 @@ function OrbitSun({ earthPosition }: { earthPosition: Vector3 }) {
         />
       </mesh>
 
-      {rays.map((ray, index) => {
+      {showRays || showDirection ? rays.map((ray, index) => {
         const quaternion = new Quaternion().setFromUnitVectors(Y_AXIS, ray.direction)
         return (
           <group key={index}>
-            <Line
-              points={[ray.start, ray.end]}
-              color="#fbbf24"
-              transparent
-              opacity={0.38}
-              lineWidth={1}
-            />
-            <mesh position={ray.arrow} quaternion={quaternion}>
-              <coneGeometry args={[0.045, 0.16, 14]} />
-              <meshBasicMaterial color="#fbbf24" transparent opacity={0.82} />
-            </mesh>
+            {showRays ? (
+              <Line
+                points={[ray.start, ray.end]}
+                {...teachingOverlayStyle.lines.orbitSunRay}
+              />
+            ) : null}
+            {showDirection ? (
+              <mesh position={ray.arrow} quaternion={quaternion}>
+                <coneGeometry args={[0.045, 0.16, 14]} />
+                <meshBasicMaterial
+                  color={teachingOverlayStyle.lines.orbitSunRay.color}
+                  transparent
+                  opacity={teachingOverlayStyle.opacity.orbitSunArrow}
+                  depthTest={teachingOverlayStyle.depthTest.world}
+                />
+              </mesh>
+            ) : null}
           </group>
         )
-      })}
+      }) : null}
     </group>
   )
 }
 
 export function OrbitSystem() {
   const simulationTimeMs = useEarthLabStore((state) => state.simulationTimeMs)
+  const teachingLayers = useEarthLabStore((state) => state.teachingLayers)
   const year = new Date(simulationTimeMs).getUTCFullYear()
   const orbitState = useMemo(
     () => calculateEarthOrbitState(simulationTimeMs),
@@ -152,19 +166,23 @@ export function OrbitSystem() {
 
   return (
     <group>
-      <OrbitSun earthPosition={earthPosition} />
+      <OrbitSun
+        earthPosition={earthPosition}
+        showRays={teachingLayers.parallelSunRays}
+        showDirection={teachingLayers.solarDirection}
+      />
 
       <mesh rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[ORBIT_SCENE_SCALE * 1.12, 128]} />
         <meshBasicMaterial
           color="#38bdf8"
           transparent
-          opacity={0.035}
+          opacity={teachingOverlayStyle.surface.orbitPlaneOpacity}
           depthWrite={false}
           side={DoubleSide}
         />
       </mesh>
-      <Line points={orbitPath} color="#38bdf8" transparent opacity={0.72} lineWidth={1.4} />
+      <Line points={orbitPath} {...teachingOverlayStyle.lines.orbitPath} />
 
       {directionArrows.map((arrow, index) => (
         <OrbitDirectionArrow key={index} position={arrow.position} tangent={arrow.tangent} />
@@ -176,17 +194,17 @@ export function OrbitSystem() {
             <sphereGeometry args={[0.075, 16, 12]} />
             <meshBasicMaterial color="#67e8f9" toneMapped={false} />
           </mesh>
-          <Html position={[0, 0.38, 0]} center distanceFactor={13}>
-            <span className="orbit-marker-label">{marker.label}</span>
+          <Html position={[0, 0.38, 0]} center distanceFactor={13} zIndexRange={[3, 0]}>
+            <span className="orbit-marker-label" style={{ fontSize: teachingOverlayStyle.labelSize.default }}>{marker.label}</span>
           </Html>
         </group>
       ))}
 
       <group position={earthPosition}>
         <group scale={EARTH_VISUAL_SCALE}>
-          <EarthModel showEquatorialPlane rotationModel="orbit-aligned" />
+          <EarthModel showEquatorialPlane rotationModel="fixed" />
         </group>
-        <ObliquityIndicator />
+        {teachingLayers.angleIndicators ? <ObliquityIndicator /> : null}
       </group>
     </group>
   )

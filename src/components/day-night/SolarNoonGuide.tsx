@@ -1,7 +1,9 @@
-import { Html, Line } from '@react-three/drei'
+import { Line } from '@react-three/drei'
 import { useMemo } from 'react'
 import { Vector3 } from 'three'
 import { EARTH_RADIUS, latitudeLongitudeToVector3 } from '../../lib/earthCoordinates'
+import { TeachingLabel } from '../scene/TeachingLabel'
+import { teachingOverlayStyle } from '../../config/teachingOverlayStyle'
 
 interface SolarNoonGuideProps {
   latitudeDegrees: number
@@ -56,18 +58,20 @@ export function SolarNoonGuide({
       normalEnd: observer.clone().add(normal.multiplyScalar(0.78)),
       sunlightEnd: observer.clone().add(towardSun.multiplyScalar(0.78)),
       arc,
+      horizonEnd: arc[0]!,
       labelPosition: arc[Math.floor(arc.length / 2)] ?? observer,
     }
   }, [latitudeDegrees, longitudeDegrees, sunDirection])
 
   return (
-    <group renderOrder={11}>
-      <Line points={[geometry.observer, geometry.normalEnd]} color="#67e8f9" lineWidth={2} />
-      <Line points={[geometry.observer, geometry.sunlightEnd]} color="#facc15" lineWidth={2.4} />
-      <Line points={geometry.arc} color="#fb923c" lineWidth={3} />
-      <Html position={geometry.labelPosition} center distanceFactor={5.2}>
+    <group renderOrder={teachingOverlayStyle.renderOrder.angle}>
+      <Line points={[geometry.observer, geometry.normalEnd]} {...teachingOverlayStyle.lines.solarNoonNormal} />
+      <Line points={[geometry.observer, geometry.sunlightEnd]} {...teachingOverlayStyle.lines.solarNoonRay} />
+      <Line points={[geometry.observer, geometry.horizonEnd]} {...teachingOverlayStyle.lines.equatorialPlaneOutline} />
+      <Line points={geometry.arc} {...teachingOverlayStyle.lines.solarNoonAngle} />
+      <TeachingLabel position={geometry.labelPosition} role="altitude">
         <span className="solar-altitude-label">正午太阳高度 {altitudeDegrees.toFixed(1)}°</span>
-      </Html>
+      </TeachingLabel>
     </group>
   )
 }

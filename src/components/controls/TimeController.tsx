@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
 import { useEarthLabStore } from '../../store/useEarthLabStore'
-import type { SimulationSpeed } from '../../types/lab'
 import { calculateSeasonalEvents } from '../../domain/orbit/earthOrbit'
+import { SIMULATION_SPEED_OPTIONS } from '../../domain/simulation/playback'
+import { AnnualOrbitController } from './AnnualOrbitController'
 
-const SPEED_OPTIONS: SimulationSpeed[] = [1, 10, 100, 1000]
 const DAY_MILLISECONDS = 86_400_000
 
 const simulationTimeFormatter = new Intl.DateTimeFormat('zh-CN', {
@@ -41,6 +41,11 @@ function dayOfYearToTimeMs(dayOfYear: number, currentTimeMs: number): number {
 }
 
 export function TimeController() {
+  const activeModuleId = useEarthLabStore(state => state.activeModuleId)
+  return activeModuleId === 'revolution' ? <AnnualOrbitController /> : <StandardTimeController />
+}
+
+function StandardTimeController() {
   const activeModuleId = useEarthLabStore((state) => state.activeModuleId)
   const simulationTimeMs = useEarthLabStore((state) => state.simulationTimeMs)
   const isPlaying = useEarthLabStore((state) => state.isPlaying)
@@ -59,7 +64,6 @@ export function TimeController() {
     () => calculateSeasonalEvents(currentYear),
     [currentYear],
   )
-
   return (
     <section className="time-controller" aria-label="时间控制器">
       <button
@@ -110,7 +114,7 @@ export function TimeController() {
       </div>
 
       <div className="speed-control" aria-label="播放速度">
-        {SPEED_OPTIONS.map((option) => (
+        {SIMULATION_SPEED_OPTIONS.map((option) => (
           <button
             key={option}
             type="button"

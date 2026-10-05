@@ -2,12 +2,14 @@ import { Line } from '@react-three/drei'
 import { useMemo } from 'react'
 import { MathUtils, Quaternion, Vector3 } from 'three'
 import { EARTH_RADIUS, latitudeLongitudeToVector3 } from '../../lib/earthCoordinates'
+import { teachingOverlayStyle } from '../../config/teachingOverlayStyle'
 
 const ARROW_RADIUS = EARTH_RADIUS * 1.22
 const START_LONGITUDE = -55
 const END_LONGITUDE = 225
 
 export function RotationDirectionArrow() {
+  const style = teachingOverlayStyle.lines.rotationDirection
   const { points, arrowPosition, arrowQuaternion } = useMemo(() => {
     const arcPoints = Array.from({ length: 121 }, (_, index) => {
       const longitude =
@@ -33,17 +35,14 @@ export function RotationDirectionArrow() {
   }, [])
 
   return (
-    <group renderOrder={7}>
+    <group renderOrder={style.renderOrder}>
       <Line
         points={points}
-        color="#fbbf24"
-        transparent
-        opacity={0.9}
-        lineWidth={2.4}
+        {...style}
       />
       <mesh position={arrowPosition} quaternion={arrowQuaternion}>
         <coneGeometry args={[0.075, 0.24, 20]} />
-        <meshBasicMaterial color="#fbbf24" />
+        <meshBasicMaterial color={style.color} transparent opacity={style.opacity} depthTest={style.depthTest} />
       </mesh>
     </group>
   )
